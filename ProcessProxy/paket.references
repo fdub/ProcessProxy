@@ -1,2 +1,4 @@
 ﻿Castle.Core
-Akka
+Akka.Remote
+Newtonsoft.Json
+System.ValueTuple

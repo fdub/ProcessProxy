@@ -3,3 +3,4 @@ nuget Akka.Remote
 nuget Castle.Core
 nuget DynamicProxy
 nuget Newtonsoft.Json
+nuget System.ValueTuple
