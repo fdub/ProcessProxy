@@ -12,7 +12,8 @@ namespace Demo
     {
         static void Main(string[] args)
         {
-            var proxy = Factory.Create<IBadLib, BadLib>();
+            var factory = new Factory();
+            var proxy = factory.Create<IBadLib, BadLib>();
             proxy.ShowMessage(proxy.GreetMe());
         }
     }

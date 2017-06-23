@@ -1,25 +1,22 @@
 ﻿using System;
 using Castle.DynamicProxy;
+using Akka.Actor;
 
 namespace ProcessProxy
 {
-    public class Interceptor<T> : IInterceptor where T : class, new()
+    public class SenderInterceptor : IInterceptor
     {
-        private T _instance;
+        private IActorRef _target;
 
-        public Interceptor()
+        public SenderInterceptor(IActorRef target)
         {
-            _instance = Activator.CreateInstance<T>();
+            _target = target;
         }
 
         public void Intercept(IInvocation invocation)
         {
-            var result = invocation.Method.Invoke(_instance, invocation.Arguments);
-
-            if (invocation.Method.ReturnType != null)
-            {
-                invocation.ReturnValue = result;   
-            }
+            var result = _target.Ask<IInvocation>(invocation).GetAwaiter().GetResult();
+            invocation.ReturnValue = result.ReturnValue;
         }
     }
 }
