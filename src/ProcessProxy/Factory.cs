@@ -16,8 +16,11 @@ namespace ProcessProxy
         {
             var hocon = ConfigurationFactory.ParseString(config);
             _system = ActorSystem.Create("ProxyFactory", hocon);
+            var host = hocon.GetString("akka.remote.helios.tcp.hostname");
+            var port = hocon.GetString("akka.remote.helios.tcp.port");
+            var endpoint = new Uri($"akka.tcp://{_system.Name}@{host}:{port}");
             
-            _registry = _system.ActorOf(Props.Create(() => new RegistryActor("akka.tcp://ProxyFactory@localhost:33033")), "registry");
+            _registry = _system.ActorOf(Props.Create(() => new RegistryActor(endpoint)), "registry");
             _dispatcher = _system.ActorOf(Props.Create(() => new DispatcherActor(_registry)), "dispatcher");
         }
 
