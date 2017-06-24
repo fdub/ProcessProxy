@@ -10,7 +10,7 @@ using System;
 
 namespace ProcessProxy
 {
-    public class Factory 
+    public class Factory : IDisposable
     {
         private ActorSystem _system;
         private IActorRef _registry;
@@ -34,8 +34,25 @@ namespace ProcessProxy
             var type = typeof(TClass).Name;
             var actor = _dispatcher.Ask<IActorRef>(new Create(asm, type)).GetAwaiter().GetResult();
 
-            return new ProxyGenerator()
-                .CreateInterfaceProxyWithoutTarget<TInterface>(new SenderInterceptor(actor));
+            var scope = new ModuleScope(
+                true,
+                true, 
+                ModuleScope.DEFAULT_ASSEMBLY_NAME, 
+                ModuleScope.DEFAULT_FILE_NAME,
+                $"ProcessProxy.{typeof(TClass).Name}.Gen",
+                $"ProcessProxy.{typeof(TClass).Name}.Gen.dll");
+            var builder = new DefaultProxyBuilder(scope);
+
+            var result = new ProxyGenerator(builder)
+                .CreateInterfaceProxyWithoutTarget<TInterface>(ProxyGenerationOptions.Default, new SenderInterceptor(actor));
+            scope.SaveAssembly();
+            actor.Tell($"load|ProcessProxy.{typeof(TClass).Name}.Gen.dll");
+            return result;
+        }
+
+        public void Dispose()
+        {
+            _system.Terminate().Wait();
         }
     }
 }

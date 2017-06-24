@@ -1,6 +1,7 @@
 ﻿using ProcessProxy;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -14,6 +15,13 @@ namespace Demo
 akka {
     actor {
         provider = ""Akka.Remote.RemoteActorRefProvider, Akka.Remote""
+
+        serializers {
+            hyperion = ""Akka.Serialization.HyperionSerializer, Akka.Serialization.Hyperion""
+        }
+        serialization-bindings {
+            ""System.Object"" = hyperion
+        }
     }
 
     remote {
@@ -22,17 +30,28 @@ akka {
             hostname = localhost
         }
     }
-
 }
-
-
-akka.suppress-json-serializer-warning = on
 ";
         static void Main(string[] args)
         {
-            var factory = new Factory(config);
-            var proxy = factory.Create<IBadLib, BadLib>();
-            proxy.ShowMessage("test");
+            using (var factory = new Factory(config))
+            using (var proxy = factory.Create<IBadLib, BadLib>())
+            {
+                var greeting = proxy.GetGreeting();
+                proxy.ShowMessage(greeting);
+                proxy.ShowMessage(proxy.TypeName);
+
+                var sw = new Stopwatch();
+                sw.Start();
+                var a = 0;
+                foreach (var i in Enumerable.Range(0, 1_000))
+                {
+                    a = proxy.Add(a, i);
+                }
+                sw.Stop();
+
+                proxy.ShowMessage($"Added numbers from 0 to 1000 in {sw.ElapsedMilliseconds} ms to: {a}");
+            }
         }
     }
 }

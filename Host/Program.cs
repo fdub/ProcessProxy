@@ -1,9 +1,5 @@
 ﻿using Akka.Actor;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Host
 {
@@ -13,6 +9,12 @@ namespace Host
 akka {
     actor {
         provider = ""Akka.Remote.RemoteActorRefProvider, Akka.Remote""
+        serializers {
+            hyperion = ""Akka.Serialization.HyperionSerializer, Akka.Serialization.Hyperion""
+        }
+        serialization-bindings {
+            ""System.Object"" = hyperion
+        }
     }
 
     remote {
@@ -21,8 +23,6 @@ akka {
         }
     }
 }
-
-akka.suppress-json-serializer-warning = on
 ";
         private static ActorSystem _system;
 

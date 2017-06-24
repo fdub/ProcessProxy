@@ -1,4 +1,4 @@
 ﻿Castle.Core
 Akka.Remote
-Newtonsoft.Json
+Akka.Serialization.Hyperion
 System.ValueTuple

@@ -1,8 +1,13 @@
-﻿namespace TestClass
+﻿using System;
+
+namespace TestClass
 {
-    public interface IBadLib
+    public interface IBadLib : IDisposable
     {
+        string TypeName { get; }
+
         void ShowMessage(string message);
-        string GreetMe();
+        int Add(int a, int b);
+        string GetGreeting();
     }
 }
