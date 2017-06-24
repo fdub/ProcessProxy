@@ -1,7 +1,23 @@
-source https://www.nuget.org/api/v2
+framework: >= net45
+source https://nuget.org/api/v2
+
+nuget FSharp.Core ~> 4.0.0.1 redirects: force
 nuget Akka.Remote
 nuget Akka.Serialization.Hyperion
 nuget Castle.Core
-nuget DynamicProxy
 nuget Newtonsoft.Json
 nuget System.ValueTuple
+
+group Build
+  source https://nuget.org/api/v2
+  
+  nuget FAKE
+  nuget FSharp.Formatting
+
+  github fsharp/FAKE modules/Octokit/Octokit.fsx
+
+group Test
+  source https://nuget.org/api/v2
+  
+  nuget NUnit ~> 2
+  nuget NUnit.Runners ~> 2

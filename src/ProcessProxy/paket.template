@@ -1,0 +1,21 @@
+type project
+owners
+    fdub <fdub@posteo.de>
+authors 
+    fdub <fdub@posteo.de>
+projectUrl
+    http://github.com/fdub/ProcessProxy
+licenseUrl
+    http://opensource.org/licenses/MIT
+requireLicenseAcceptance
+    false
+copyright
+    Copyright 2017
+tags
+    proxy isolation process
+summary
+    Prototype of library to isolate a class by creating a proxy and instantiating the class in another process.
+description
+    Prototype of library to isolate a class by creating a proxy and instantiating the class in another process.
+
+
