@@ -3,40 +3,11 @@ using Akka.Actor;
 using System;
 using System.Diagnostics;
 using System.IO;
+using ProcessProxy.Messages;
+using Envelope = ProcessProxy.Messages.Envelope;
 
 namespace ProcessProxy
 {
-    public class Envelope<T>
-    {
-        public T Msg { get; }
-        public IActorRef Sender { get; }
-
-        public Envelope(IActorRef sender, T msg)
-        {
-            Sender = sender;
-            Msg = msg;
-        }
-    }
-
-    public static class Envelope
-    {
-        public static Envelope<T> Create<T>(IActorRef sender, T msg)
-        {
-            return new Envelope<T>(sender, msg);
-        }
-    }
-
-    public class Create
-    {
-        public string Asm { get; }
-        public string Type { get; }
-
-        public Create(string asm, string type)
-        {
-            Asm = asm;
-            Type = type;
-        }
-    }
     public class RegistryActor : UntypedActor
     {
         private readonly Dictionary<Guid, Envelope<IActorRef>> _senders = new Dictionary<Guid, Envelope<IActorRef>>();
@@ -54,10 +25,11 @@ namespace ProcessProxy
                 case Envelope<Create> c:
                     {
                         var guid = Guid.NewGuid();
-                        var asm = c.Msg.Asm;
-                        var type = c.Msg.Type;
+
                         var cmd = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Host.exe");
-                        var process = Process.Start(cmd, $"\"{_endpoint}\" {guid} \"{asm}\" \"{type}\"");
+                        var args = $"\"{_endpoint}\" {guid} \"{c.Msg.Asm}\" \"{c.Msg.Type}\"";
+
+                        Process.Start(cmd, args);
                         _senders.Add(guid, Envelope.Create(Sender, c.Sender));
                         break;
                     }

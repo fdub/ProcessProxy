@@ -11,12 +11,13 @@ namespace Host
     {
         private object _instance;
 
-        public InvocatorActor(string asm, string type)
+        public InvocatorActor(string assemblyName, string typeName)
         {
-            var assembly = AppDomain.CurrentDomain.Load(asm);
-            var ty = assembly.DefinedTypes.FirstOrDefault(t => t.Name == type);
-            _instance = Activator.CreateInstance(ty);
-            Console.WriteLine($"Instance from type {type} created: {_instance}");
+            var assembly = AppDomain.CurrentDomain.Load(assemblyName);
+            var type = assembly.DefinedTypes.FirstOrDefault(t => t.Name == typeName);
+            _instance = Activator.CreateInstance(type);
+
+            Console.WriteLine($"Instance from type {typeName} created: {_instance}");
         }
 
         protected override void OnReceive(object message)
@@ -26,7 +27,7 @@ namespace Host
                 case string s when s.StartsWith("load|"):
                     {
                         Assembly.LoadFrom(s.Split('|')[1]);
-                        Console.WriteLine(s);
+                        Console.WriteLine($"Loaded assembly: {s}");
                         break;
                     }
                 case IInvocation i:

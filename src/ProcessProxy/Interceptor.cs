@@ -15,7 +15,10 @@ namespace ProcessProxy
 
         public void Intercept(IInvocation invocation)
         {
-            var result = _target.Ask<IInvocation>(invocation).GetAwaiter().GetResult();
+            var result = _target
+                .Ask<IInvocation>(invocation)
+                .GetAwaiter()
+                .GetResult();
             invocation.ReturnValue = result.ReturnValue;
         }
     }

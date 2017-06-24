@@ -1,4 +1,6 @@
 ﻿using Akka.Actor;
+using ProcessProxy.Messages;
+using Envelope = ProcessProxy.Messages.Envelope;
 
 namespace ProcessProxy
 {

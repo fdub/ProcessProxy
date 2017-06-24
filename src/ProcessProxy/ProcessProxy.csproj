@@ -40,7 +40,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Messages\Create.cs" />
     <Compile Include="DispatcherActor.cs" />
+    <Compile Include="Messages\Envelope.cs" />
     <Compile Include="Factory.cs" />
     <Compile Include="Interceptor.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

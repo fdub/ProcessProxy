@@ -1,12 +1,8 @@
-﻿using System.Linq;
-using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
-using Castle.Core;
-using Castle.DynamicProxy;
+﻿using Castle.DynamicProxy;
 using Akka.Actor;
 using Akka.Configuration;
 using System;
+using ProcessProxy.Messages;
 
 namespace ProcessProxy
 {
@@ -30,29 +26,48 @@ namespace ProcessProxy
             where TClass : class, TInterface, new()
         {
             var guid = Guid.NewGuid();
-            var asm = typeof(TClass).Assembly.FullName;
-            var type = typeof(TClass).Name;
-            var actor = _dispatcher.Ask<IActorRef>(new Create(asm, type)).GetAwaiter().GetResult();
+            var classType = typeof(TClass);
+            var actor = CreateHostActor(classType);
 
-            var scope = new ModuleScope(
-                true,
-                true, 
-                ModuleScope.DEFAULT_ASSEMBLY_NAME, 
-                ModuleScope.DEFAULT_FILE_NAME,
-                $"ProcessProxy.{typeof(TClass).Name}.Gen",
-                $"ProcessProxy.{typeof(TClass).Name}.Gen.dll");
-            var builder = new DefaultProxyBuilder(scope);
+            var scope = CreateModuleScope(classType);
+            var proxyGenerator = new ProxyGenerator(new DefaultProxyBuilder(scope));
 
-            var result = new ProxyGenerator(builder)
-                .CreateInterfaceProxyWithoutTarget<TInterface>(ProxyGenerationOptions.Default, new SenderInterceptor(actor));
+            var result = proxyGenerator
+                .CreateInterfaceProxyWithoutTarget<TInterface>(new SenderInterceptor(actor));
+
             scope.SaveAssembly();
-            actor.Tell($"load|ProcessProxy.{typeof(TClass).Name}.Gen.dll");
+            actor.Tell($"load|{GetAssemblyPath(classType)}");
             return result;
         }
 
+        private IActorRef CreateHostActor(Type classType)
+        {
+            var asm = classType.Assembly.FullName;
+            var type = classType.Name;
+            return _dispatcher
+                .Ask<IActorRef>(new Create(asm, type))
+                .GetAwaiter()
+                .GetResult();
+        }
+
+        private static ModuleScope CreateModuleScope(Type classType)
+        {
+            return new ModuleScope(
+                true,
+                true,
+                ModuleScope.DEFAULT_ASSEMBLY_NAME,
+                ModuleScope.DEFAULT_FILE_NAME,
+                GetAssemblyName(classType),
+                GetAssemblyPath(classType));
+        }
+
+        private static string GetAssemblyName(Type type) => $"ProcessProxy.{type.Name}.Gen";
+        private static string GetAssemblyPath(Type type) => GetAssemblyName(type) + ".dll";
+
         public void Dispose()
         {
-            _system.Terminate().Wait();
+            _system.Terminate().GetAwaiter().GetResult();
+            _system.Dispose();
         }
     }
 }

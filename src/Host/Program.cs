@@ -24,7 +24,6 @@ akka {
     }
 }
 ";
-        private static ActorSystem _system;
 
         static void Main(string[] args)
         {
@@ -35,13 +34,18 @@ akka {
             var type = args[3];
 
             var hocon = Akka.Configuration.ConfigurationFactory.ParseString(config);
-            _system = ActorSystem.Create("Host", hocon);
-            
-            var actor = _system.ActorOf(Props.Create(() => new InvocatorActor(asm, type)));
-            var proxy = _system.ActorSelection(actorPath).ResolveOne(TimeSpan.FromSeconds(5)).Result;
-            proxy.Tell($"register:{guid}", actor);
+            using (var system = ActorSystem.Create("Host", hocon))
+            {
+                var actor = system.ActorOf(Props.Create(() => new InvocatorActor(asm, type)));
+                var proxy = system
+                    .ActorSelection(actorPath)
+                    .ResolveOne(TimeSpan.FromSeconds(5))
+                    .GetAwaiter()
+                    .GetResult();
+                proxy.Tell($"register:{guid}", actor);
 
-            _system.WhenTerminated.Wait();
+                system.WhenTerminated.GetAwaiter().GetResult();
+            }
         }
     }
 }
