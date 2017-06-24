@@ -4,5 +4,4 @@ nuget Akka.Serialization.Hyperion
 nuget Castle.Core
 nuget DynamicProxy
 nuget Newtonsoft.Json
-nuget System.Reactive
 nuget System.ValueTuple
